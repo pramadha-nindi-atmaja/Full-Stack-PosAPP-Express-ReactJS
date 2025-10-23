@@ -1,29 +1,33 @@
 import prisma from "../utils/client.js";
 import { logger } from "../utils/winston.js";
 
+/**
+ * Get cart by productId and userId
+ */
 export const getCartByProductId = async (req, res) => {
-  const param = req.params;
-  if (!param.id || !param.userId) {
+  const { id: productId, userId } = req.params;
+
+  if (!productId || !userId) {
     return res.status(400).json({
       message: "Invalid input: Missing productId or userId",
       result: null,
     });
   }
+
   try {
-    const result = await prisma.carts.findMany({
+    const cart = await prisma.carts.findFirst({
       where: {
-        productId: Number(param.id),
-        userId: Number(param.userId),
+        productId: Number(productId),
+        userId: Number(userId),
       },
     });
+
     return res.status(200).json({
       message: "success",
-      result: result[0],
+      result: cart,
     });
   } catch (error) {
-    logger.error(
-      "controllers/cart.controller.js:getCartByProductId - " + error.message
-    );
+    logger.error(`getCartByProductId - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -31,21 +35,21 @@ export const getCartByProductId = async (req, res) => {
   }
 };
 
+/**
+ * Get all carts (admin use)
+ */
 export const getAllCart = async (req, res) => {
   try {
-    const result = await prisma.carts.findMany({
-      orderBy: {
-        id: "desc",
-      },
+    const carts = await prisma.carts.findMany({
+      orderBy: { id: "desc" },
     });
+
     return res.status(200).json({
       message: "success",
-      result,
+      result: carts,
     });
   } catch (error) {
-    logger.error(
-      "controllers/cart.controller.js:getAllCart - " + error.message
-    );
+    logger.error(`getAllCart - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -53,6 +57,9 @@ export const getAllCart = async (req, res) => {
   }
 };
 
+/**
+ * Create new cart
+ */
 export const createCart = async (req, res) => {
   const { price, productName, qty, totalPrice, note, productId, userId } =
     req.body;
@@ -65,25 +72,24 @@ export const createCart = async (req, res) => {
   }
 
   try {
-    const result = await prisma.carts.create({
+    const newCart = await prisma.carts.create({
       data: {
-        price,
+        price: Number(price),
         productName,
-        qty,
-        totalPrice,
-        note,
-        productId,
-        userId,
+        qty: Number(qty),
+        totalPrice: Number(totalPrice),
+        note: note || "",
+        productId: Number(productId),
+        userId: Number(userId),
       },
     });
-    return res.status(200).json({
+
+    return res.status(201).json({
       message: "success",
-      result,
+      result: newCart,
     });
   } catch (error) {
-    logger.error(
-      "controllers/cart.controller.js:createCart - " + error.message
-    );
+    logger.error(`createCart - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -91,11 +97,15 @@ export const createCart = async (req, res) => {
   }
 };
 
+/**
+ * Update cart by ID
+ */
 export const updateCart = async (req, res) => {
+  const { id } = req.params;
   const { price, productName, qty, totalPrice, note, productId, userId } =
     req.body;
 
-  if (!price || !productName || !qty || !totalPrice || !productId || !userId || !req.params.id) {
+  if (!id || !price || !productName || !qty || !totalPrice || !productId || !userId) {
     return res.status(400).json({
       message: "Invalid input: Missing required fields or cart ID",
       result: null,
@@ -103,28 +113,36 @@ export const updateCart = async (req, res) => {
   }
 
   try {
-    const result = await prisma.carts.update({
-      where: {
-        id: Number(req.params.id),
-      },
+    const existingCart = await prisma.carts.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingCart) {
+      return res.status(404).json({
+        message: "Cart not found",
+        result: null,
+      });
+    }
+
+    const updatedCart = await prisma.carts.update({
+      where: { id: Number(id) },
       data: {
         price: Number(price),
         productName,
         qty: Number(qty),
         totalPrice: Number(totalPrice),
-        note,
+        note: note || "",
         productId: Number(productId),
-        userId,
+        userId: Number(userId),
       },
     });
+
     return res.status(200).json({
       message: "success",
-      result,
+      result: updatedCart,
     });
   } catch (error) {
-    logger.error(
-      "controllers/cart.controller.js:updateCart - " + error.message
-    );
+    logger.error(`updateCart - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -132,29 +150,41 @@ export const updateCart = async (req, res) => {
   }
 };
 
+/**
+ * Delete single cart
+ */
 export const deleteCart = async (req, res) => {
-  const param = req.params;
-  if (!param.id || !param.userId) {
+  const { id, userId } = req.params;
+
+  if (!id || !userId) {
     return res.status(400).json({
       message: "Invalid input: Missing cart ID or user ID",
       result: null,
     });
   }
+
   try {
-    const result = await prisma.carts.delete({
-      where: {
-        id: Number(param.id),
-        userId: Number(param.userId),
-      },
+    const existingCart = await prisma.carts.findUnique({
+      where: { id: Number(id) },
     });
+
+    if (!existingCart) {
+      return res.status(404).json({
+        message: "Cart not found",
+        result: null,
+      });
+    }
+
+    await prisma.carts.delete({
+      where: { id: Number(id) },
+    });
+
     return res.status(200).json({
       message: "success",
-      result,
+      result: null,
     });
   } catch (error) {
-    logger.error(
-      "controllers/cart.controller.js:deleteCart - " + error.message
-    );
+    logger.error(`deleteCart - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -162,27 +192,30 @@ export const deleteCart = async (req, res) => {
   }
 };
 
+/**
+ * Delete all carts for a user
+ */
 export const deleteAllCart = async (req, res) => {
-  if (!req.params.userId) {
+  const { userId } = req.params;
+
+  if (!userId) {
     return res.status(400).json({
       message: "Invalid input: Missing user ID",
       result: null,
     });
   }
+
   try {
     const result = await prisma.carts.deleteMany({
-      where: {
-        userId: Number(req.params.userId),
-      },
+      where: { userId: Number(userId) },
     });
+
     return res.status(200).json({
       message: "success",
-      result,
+      deletedCount: result.count,
     });
   } catch (error) {
-    logger.error(
-      "controllers/cart.controller.js:deleteAllCart - " + error.message
-    );
+    logger.error(`deleteAllCart - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
