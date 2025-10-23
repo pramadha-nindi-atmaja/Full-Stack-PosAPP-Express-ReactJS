@@ -12,8 +12,10 @@ import {
   userValidation,
 } from "../validations/user.validation.js";
 
+/**
+ * Create new user
+ */
 export const createUser = async (req, res) => {
-  // data validation
   const { error, value } = userValidation(req.body);
   if (error) {
     return res.status(400).json({
@@ -21,24 +23,37 @@ export const createUser = async (req, res) => {
       result: null,
     });
   }
+
   try {
-    const result = await prisma.user.create({
+    // Check if username already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { userName: value.userName },
+    });
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Username already exists",
+        result: null,
+      });
+    }
+
+    const hashedPassword = encript(value.password);
+    const newUser = await prisma.user.create({
       data: {
         name: value.name,
         userName: value.userName,
-        password: encript(value.password),
+        password: hashedPassword,
         role: value.role,
       },
     });
-    result.password = "xxxxxxxxxxxxxx";
-    return res.status(200).json({
-      message: "success",
-      result,
+
+    delete newUser.password;
+
+    return res.status(201).json({
+      message: "User created successfully",
+      result: newUser,
     });
   } catch (error) {
-    logger.error(
-      "controllers/user.controller.js:createUser - " + error.message
-    );
+    logger.error(`createUser - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -46,154 +61,50 @@ export const createUser = async (req, res) => {
   }
 };
 
+/**
+ * Update user by ID
+ */
 export const updateUser = async (req, res) => {
-  // check if user exist
-  const user = await prisma.user.findUnique({
-    where: { id: Number(req.params.id) },
-  });
-  if (!user) {
-    return res.status(404).json({
-      message: "User not found",
-      result: null,
-    });
-  }
-  // data validation
+  const { id } = req.params;
   const { error, value } = userUpdateValidation(req.body);
+
   if (error) {
     return res.status(400).json({
       message: error.details[0].message,
       result: null,
     });
   }
-  let pass = user.password;
-  if (value.password && value.password.length > 0) {
-    pass = encript(value.password);
-  }
-  try {
-    const result = await prisma.user.update({
-      where: {
-        id: Number(req.params.id),
-      },
-      data: {
-        name: value.name,
-        userName: value.userName,
-        password: pass,
-        role: value.role,
-      },
-    });
-    result.password = "xxxxxxxxxxxxxx";
-    return res.status(200).json({
-      message: "success",
-      result,
-    });
-  } catch (error) {
-    logger.error(
-      "controllers/user.controller.js:updateUser - " + error.message
-    );
-    return res.status(500).json({
-      message: error.message,
-      result: null,
-    });
-  }
-};
 
-export const deleteUser = async (req, res) => {
   try {
-    const result = await prisma.user.delete({
-      where: {
-        id: Number(req.params.id),
-      },
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
     });
-    result.password = "xxxxxxxxxxxxxx";
-    return res.status(200).json({
-      message: "success",
-      result,
-    });
-  } catch (error) {
-    logger.error(
-      "controllers/user.controller.js:deleteUser - " + error.message
-    );
-    return res.status(500).json({
-      message: error.message,
-      result: null,
-    });
-  }
-};
 
-export const getAllUser = async (req, res) => {
-  try {
-    const result = await prisma.user.findMany({});
-    return res.status(200).json({
-      message: "success",
-      result,
-    });
-  } catch (error) {
-    logger.error(
-      "controllers/user.controller.js:getAllUser - " + error.message
-    );
-    return res.status(500).json({
-      message: error.message,
-      result: null,
-    });
-  }
-};
-
-export const getUserById = async (req, res) => {
-  try {
-    const result = await prisma.user.findUnique({
-      where: {
-        id: Number(req.params.id),
-      },
-    });
-    result.password = "xxxxxxxxxxxxxx";
-    return res.status(200).json({
-      message: "success",
-      result,
-    });
-  } catch (error) {
-    logger.error(
-      "controllers/user.controller.js:getUserById - " + error.message
-    );
-    return res.status(500).json({
-      message: error.message,
-      result: null,
-    });
-  }
-};
-
-export const loginUser = async (req, res) => {
-  try {
-    const result = await prisma.user.findUnique({
-      where: {
-        userName: req.body.userName,
-      },
-    });
-    if (result) {
-      if (compare(req.body.password, result.password)) {
-        // generate token
-        result.password = "xxxxxxxxxxxxxx";
-        const acessToken = generateAccessToken(result);
-        const refreshToken = generateRefreshToken(result);
-        return res.status(200).json({
-          message: "Login success",
-          result,
-          acessToken,
-          refreshToken,
-        });
-      } else {
-        return res.status(500).json({
-          message: "password not match",
-          result: null,
-        });
-      }
-    } else {
-      return res.status(500).json({
-        message: "user not found",
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
         result: null,
       });
     }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: Number(id) },
+      data: {
+        name: value.name,
+        userName: value.userName,
+        password: value.password ? encript(value.password) : user.password,
+        role: value.role,
+      },
+    });
+
+    delete updatedUser.password;
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      result: updatedUser,
+    });
   } catch (error) {
-    logger.error("controllers/user.controller.js:loginUser - " + error.message);
+    logger.error(`updateUser - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
@@ -201,49 +112,199 @@ export const loginUser = async (req, res) => {
   }
 };
 
+/**
+ * Delete user by ID
+ */
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const existing = await prisma.user.findUnique({
+      where: { id: Number(id) },
+    });
+    if (!existing) {
+      return res.status(404).json({
+        message: "User not found",
+        result: null,
+      });
+    }
+
+    await prisma.user.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.status(200).json({
+      message: "User deleted successfully",
+      result: null,
+    });
+  } catch (error) {
+    logger.error(`deleteUser - ${error.message}`);
+    return res.status(500).json({
+      message: error.message,
+      result: null,
+    });
+  }
+};
+
+/**
+ * Get all users
+ */
+export const getAllUser = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: { id: "desc" },
+      select: {
+        id: true,
+        name: true,
+        userName: true,
+        role: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "success",
+      result: users,
+    });
+  } catch (error) {
+    logger.error(`getAllUser - ${error.message}`);
+    return res.status(500).json({
+      message: error.message,
+      result: null,
+    });
+  }
+};
+
+/**
+ * Get user by ID
+ */
+export const getUserById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        name: true,
+        userName: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        result: null,
+      });
+    }
+
+    return res.status(200).json({
+      message: "success",
+      result: user,
+    });
+  } catch (error) {
+    logger.error(`getUserById - ${error.message}`);
+    return res.status(500).json({
+      message: error.message,
+      result: null,
+    });
+  }
+};
+
+/**
+ * User login
+ */
+export const loginUser = async (req, res) => {
+  const { userName, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { userName },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        result: null,
+      });
+    }
+
+    const validPassword = compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({
+        message: "Invalid password",
+        result: null,
+      });
+    }
+
+    delete user.password;
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    return res.status(200).json({
+      message: "Login success",
+      result: user,
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    logger.error(`loginUser - ${error.message}`);
+    return res.status(500).json({
+      message: error.message,
+      result: null,
+    });
+  }
+};
+
+/**
+ * Refresh access token
+ */
 export const setRefreshToken = async (req, res) => {
   try {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
+
     if (!token) {
       return res.status(401).json({
         message: "No token provided",
         result: null,
       });
     }
-    const verify = verifyRefreshToken(token);
-    if (!verify) {
+
+    const isValid = verifyRefreshToken(token);
+    if (!isValid) {
       return res.status(401).json({
-        message: "Provided token is not valid",
+        message: "Invalid refresh token",
         result: null,
       });
     }
-    let data = await parseJwt(token);
+
+    const data = await parseJwt(token);
     const user = await prisma.user.findUnique({
-      where: {
-        userName: data.userName,
-      },
+      where: { userName: data.userName },
     });
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",
-        data: null,
-      });
-    } else {
-      user.password = "xxxxxxxxxxxxxxx";
-      const acessToken = generateAccessToken(user);
-      const refreshToken = generateRefreshToken(user);
-      return res.status(200).json({
-        message: "Refresh success",
-        result: user,
-        acessToken,
-        refreshToken,
+        result: null,
       });
     }
+
+    delete user.password;
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    return res.status(200).json({
+      message: "Token refreshed successfully",
+      result: user,
+      accessToken,
+      refreshToken,
+    });
   } catch (error) {
-    logger.error(
-      "controllers/user.controller.js:setRefreshToken - " + error.message
-    );
+    logger.error(`setRefreshToken - ${error.message}`);
     return res.status(500).json({
       message: error.message,
       result: null,
