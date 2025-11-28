@@ -25,6 +25,7 @@ const AddProduct = () => {
   const [barcode, setBarcode] = useState("");
   const [qty, setQty] = useState("");
   const [price, setPrice] = useState("");
+  const [lowStockThreshold, setLowStockThreshold] = useState(10); // Default value
   const [modalShow, setModalShow] = useState(false);
   const [supplier, setSupplier] = useState({});
   const [file, setFile] = useState(null);
@@ -66,6 +67,7 @@ const AddProduct = () => {
     formData.append("file", file);
     formData.append("qty", qty);
     formData.append("price", price);
+    formData.append("lowStockThreshold", lowStockThreshold);
     formData.append("kategoryId", category.value);
     formData.append("supplierId", supplier.id);
     try {
@@ -189,6 +191,23 @@ const AddProduct = () => {
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                   />
+                </Col>
+              </Form.Group>
+              <Form.Group as={Row} className="mb-3">
+                <Form.Label column sm="2">
+                  Low Stock Threshold
+                </Form.Label>
+                <Col sm="2">
+                  <Form.Control
+                    type="number"
+                    placeholder="10"
+                    min="0"
+                    value={lowStockThreshold}
+                    onChange={(e) => setLowStockThreshold(e.target.value)}
+                  />
+                  <Form.Text className="text-muted">
+                    Alert when stock falls below this quantity
+                  </Form.Text>
                 </Col>
               </Form.Group>
               <Form.Group as={Row}>
