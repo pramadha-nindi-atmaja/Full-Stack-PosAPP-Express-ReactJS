@@ -35,6 +35,14 @@ const ListProduct = () => {
   };
 
   const setCart = async (product) => {
+    // Show warning if product is low stock
+    if (product.isLowStock) {
+      toast.warn(`Warning: ${product.productName} is low in stock (${product.qty} remaining)`, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+
     const user = secureLocalStorage.getItem("user");
     let headersList = {
       Authorization: "Bearer " + secureLocalStorage.getItem("acessToken"),
