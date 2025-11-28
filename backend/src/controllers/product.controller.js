@@ -16,7 +16,7 @@ export const getAllProduct = async (req, res) => {
   try {
     if (last_id < 1) {
       result = await prisma.$queryRaw`
-      SELECT id, code, barcode, productName, image, url,qty, price, kategoryId, supplierId, createdAt, updatedAt 
+      SELECT id, code, barcode, productName, image, url,qty, price, kategoryId, supplierId, lowStockThreshold, createdAt, updatedAt 
       FROM Product 
       WHERE (
         code LIKE CONCAT('%', ${search}, '%')
@@ -28,7 +28,7 @@ export const getAllProduct = async (req, res) => {
       ORDER BY id DESC LIMIT ${limit}`;
     } else {
       result = await prisma.$queryRaw`
-      SELECT id, code, barcode, productName, image, url,qty, price, kategoryId, supplierId, createdAt, updatedAt 
+      SELECT id, code, barcode, productName, image, url,qty, price, kategoryId, supplierId, lowStockThreshold, createdAt, updatedAt 
       FROM Product 
       WHERE (
         code LIKE CONCAT('%', ${search}, '%')
@@ -40,11 +40,20 @@ export const getAllProduct = async (req, res) => {
       AND id < ${last_id}
       ORDER BY id DESC LIMIT ${limit}`;
     }
+    
+    // Add low stock alert flag
+    const productsWithAlert = result.map(product => {
+      return {
+        ...product,
+        isLowStock: product.qty <= product.lowStockThreshold
+      };
+    });
+    
     return res.status(200).json({
       message: "success",
-      result,
-      lastId: result.length > 0 ? result[result.length - 1].id : 0,
-      hasMore: result.length >= limit ? true : false,
+      result: productsWithAlert,
+      lastId: productsWithAlert.length > 0 ? productsWithAlert[productsWithAlert.length - 1].id : 0,
+      hasMore: productsWithAlert.length >= limit ? true : false,
     });
   } catch (error) {
     logger.error(
@@ -70,9 +79,16 @@ export const getProductById = async (req, res) => {
         id: Number(req.params.id),
       },
     });
+    
+    // Add low stock alert flag
+    const productWithAlert = {
+      ...result,
+      isLowStock: result.qty <= result.lowStockThreshold
+    };
+    
     return res.status(200).json({
       message: "success",
-      result,
+      result: productWithAlert,
     });
   } catch (error) {
     logger.error(
@@ -161,13 +177,21 @@ export const createProduct = async (req, res) => {
           url: url,
           qty: value.qty,
           price: value.price,
+          lowStockThreshold: value.lowStockThreshold || 10, // Default to 10 if not provided
           kategoryId: value.kategoryId,
           supplierId: value.supplierId,
         },
       });
+      
+      // Add low stock alert flag
+      const productWithAlert = {
+        ...result,
+        isLowStock: result.qty <= (result.lowStockThreshold || 10)
+      };
+      
       return res.status(200).json({
         message: "success",
-        result,
+        result: productWithAlert,
       });
     });
   } catch (error) {
@@ -256,13 +280,21 @@ export const updateProduct = async (req, res) => {
         url: url,
         qty: value.qty,
         price: value.price,
+        lowStockThreshold: value.lowStockThreshold !== undefined ? value.lowStockThreshold : product.lowStockThreshold,
         kategoryId: value.kategoryId,
         supplierId: value.supplierId,
       },
     });
+    
+    // Add low stock alert flag
+    const productWithAlert = {
+      ...result,
+      isLowStock: result.qty <= result.lowStockThreshold
+    };
+    
     return res.status(200).json({
       message: "success",
-      result,
+      result: productWithAlert,
     });
   } catch (error) {
     logger.error(
@@ -432,6 +464,37 @@ export const generateExcel = async (req, res) => {
   } catch (error) {
     logger.error(
       "controllers/product.controller.js:generateExcel - " + error.message
+    );
+    return res.status(500).json({
+      message: error.message,
+      result: null,
+    });
+  }
+};
+
+export const getLowStockProducts = async (req, res) => {
+  try {
+    const result = await prisma.$queryRaw`
+      SELECT id, code, barcode, productName, image, url, qty, price, kategoryId, supplierId, lowStockThreshold, createdAt, updatedAt
+      FROM Product 
+      WHERE qty <= lowStockThreshold
+      ORDER BY qty ASC`;
+    
+    // Add low stock alert flag
+    const productsWithAlert = result.map(product => {
+      return {
+        ...product,
+        isLowStock: true // All products returned by this query are low stock
+      };
+    });
+    
+    return res.status(200).json({
+      message: "success",
+      result: productsWithAlert,
+    });
+  } catch (error) {
+    logger.error(
+      "controllers/product.controller.js:getLowStockProducts - " + error.message
     );
     return res.status(500).json({
       message: error.message,
