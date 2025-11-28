@@ -7,6 +7,7 @@ import {
   getAllProduct,
   getProductByCategory,
   getProductById,
+  getLowStockProducts,
   updateProduct,
 } from "../controllers/product.controller.js";
 import { autenticate } from "../controllers/error.controller.js";
@@ -15,6 +16,7 @@ const productRoute = Router();
 productRoute.get("/products", autenticate, getAllProduct);
 productRoute.get("/products/:id", autenticate, getProductById);
 productRoute.get("/products/category/:id", autenticate, getProductByCategory);
+productRoute.get("/products-low-stock", autenticate, getLowStockProducts);
 productRoute.post("/products", autenticate, createProduct);
 productRoute.put("/products/:id", autenticate, updateProduct);
 productRoute.delete("/products/:id", autenticate, deleteProduct);
