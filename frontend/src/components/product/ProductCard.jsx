@@ -3,17 +3,23 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { MdEdit } from "react-icons/md";
 import { IoMdTrash } from "react-icons/io";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 const ProductCard = ({ product, confirmDel }) => {
   return (
     <Col md={3} xs={6} className="mb-4">
-      <Card className="shadow-sm border-0">
+      <Card className={`shadow-sm border-0 ${product.isLowStock ? 'border border-danger' : ''}`}>
         <Card.Img width={"100%"} height={200} variant="top" src={product.url} />
         <Card.Body>
           <Card.Text>
             <small>{product.code}</small>
             <br />
             {product.productName.toUpperCase()} {" ( " + product.qty + " )"}
+            {product.isLowStock && (
+              <span className="text-danger ms-2">
+                <FaExclamationTriangle /> Low Stock
+              </span>
+            )}
             <br />
             <strong>
               Rp. {parseInt(product.price).toLocaleString("id-ID")}
