@@ -5,6 +5,7 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import secureLocalStorage from "react-secure-storage";
 import ProfilModal from "./ProfilModal.jsx";
+import LowStockNotification from "./LowStockNotification.jsx";
 import { useState } from "react";
 import { FaBuffer, FaChartBar } from "react-icons/fa";
 import { GrTransaction } from "react-icons/gr";
@@ -79,6 +80,7 @@ const NavbarComponent = () => {
             </NavDropdown>
           </Nav>
           <Nav>
+            <LowStockNotification />
             <NavDropdown
               title={
                 <>
