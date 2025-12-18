@@ -155,9 +155,10 @@ const ListProduct = () => {
                   <Link to={"/product/add"} className="btn btn-primary mb-3 me-2">
                     <IoMdAdd /> Add Product
                   </Link>
-                  <Link to={"/product/bulk-import"} className="btn btn-info mb-3">
+                  <Link to={"/product/bulk-import"} className="btn btn-info mb-3 me-2">
                     <FaFileImport /> Bulk Import
                   </Link>
+                  <ExportProducts />
                 </Col>
                 <Col md={7}>
                   <form onSubmit={serchData}>
