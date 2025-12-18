@@ -18,6 +18,7 @@ router.use("/api", orderRouter);
 router.use("/api", userRoute);
 router.use("/api", orderReturnRouter);
 router.use("/api", purchaseRouter);
+router.use("/api", productAnalyticsRoute);
 router.use("*", (req, res) => {
   res.status(404).json({
     message: "Not Found",
