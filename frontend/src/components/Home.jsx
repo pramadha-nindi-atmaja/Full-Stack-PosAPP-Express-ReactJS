@@ -1,6 +1,7 @@
 import { Breadcrumb, Col, Container, Row } from "react-bootstrap";
 import NavbarComponent from "./NavbarComponent.jsx";
 import ChartComponent from "./dashboard/ChartComponent.jsx";
+import ProductAnalytics from "./dashboard/ProductAnalytics.jsx";
 import { useState } from "react";
 
 const Home = () => {
