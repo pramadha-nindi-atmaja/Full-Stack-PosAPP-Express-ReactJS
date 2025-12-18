@@ -2,6 +2,7 @@ import prisma from "../utils/client.js";
 import { setCode } from "../utils/documentPatern.js";
 import { logger } from "../utils/winston.js";
 import { productValidation } from "../validations/product.validation.js";
+import { normalizeProductData, validateProductData, formatImportErrors } from "./bulkImport.helper.js";
 import "dotenv/config";
 import path from "path";
 import fs from "fs";
