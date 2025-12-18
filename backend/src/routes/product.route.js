@@ -12,6 +12,7 @@ import {
   bulkImportProducts,
 } from "../controllers/product.controller.js";
 import { authenticate } from "../controllers/error.controller.js";
+import { bulkImportLimiter } from "../middleware/rateLimiter.js";
 const productRoute = Router();
 
 productRoute.get("/products", authenticate, getAllProduct);
