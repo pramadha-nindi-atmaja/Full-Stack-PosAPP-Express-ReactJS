@@ -532,15 +532,8 @@ export const bulkImportProducts = async (req, res) => {
       parse(file.data, { headers: true, skipEmptyLines: true })
         .on('data', (row) => {
           rowCount++;
-          products.push({
-            productName: row.productName || row['Product Name'] || '',
-            qty: parseInt(row.qty || row.quantity || row.Qty || 0),
-            price: parseFloat(row.price || row.Price || 0),
-            kategoryId: parseInt(row.kategoryId || row.categoryId || row.CategoryId || 0),
-            supplierId: parseInt(row.supplierId || row.SupplierId || 0),
-            barcode: row.barcode || row.Barcode || null,
-            lowStockThreshold: parseInt(row.lowStockThreshold || row.LowStockThreshold || 10)
-          });
+          const normalizedData = normalizeProductData(row);
+          products.push(normalizedData);
         })
         .on('end', resolve)
         .on('error', reject);
