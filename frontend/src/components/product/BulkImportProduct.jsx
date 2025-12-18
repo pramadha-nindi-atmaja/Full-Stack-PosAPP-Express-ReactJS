@@ -113,6 +113,8 @@ const BulkImportProduct = () => {
             <h3>Bulk Import Products</h3>
             <p>Upload a CSV file to import multiple products at once.</p>
             
+            <ImportInstructions />
+            
             <div className="mb-4">
               <Button variant="info" onClick={downloadTemplate}>
                 Download CSV Template
@@ -121,6 +123,8 @@ const BulkImportProduct = () => {
                 <small>Download the template to see the required format</small>
               </p>
             </div>
+            
+            <ImportHistory />
 
             <Form onSubmit={handleSubmit}>
               <Form.Group as={Row} className="mb-3">
