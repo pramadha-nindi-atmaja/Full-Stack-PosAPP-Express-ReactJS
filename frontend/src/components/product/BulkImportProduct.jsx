@@ -13,6 +13,8 @@ import {
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import NavbarComponent from "../NavbarComponent.jsx";
+import ImportInstructions from "./ImportInstructions.jsx";
+import ImportHistory from "./ImportHistory.jsx";
 import secureLocalStorage from "react-secure-storage";
 
 const BulkImportProduct = () => {
