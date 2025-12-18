@@ -6,13 +6,13 @@ import {
   getCategoryById,
   updateCategory,
 } from "../controllers/kategory.controller.js";
-import { autenticate } from "../controllers/error.controller.js";
+import { authenticate } from "../controllers/error.controller.js";
 const categoryRoute = Router();
 
-categoryRoute.get("/categorys", autenticate, getAllCategory);
-categoryRoute.get("/categorys/:id", autenticate, getCategoryById);
-categoryRoute.post("/categorys", autenticate, createCategory);
-categoryRoute.put("/categorys/:id", autenticate, updateCategory);
-categoryRoute.delete("/categorys/:id", autenticate, deleteCategory);
+categoryRoute.get("/categorys", authenticate, getAllCategory);
+categoryRoute.get("/categorys/:id", authenticate, getCategoryById);
+categoryRoute.post("/categorys", authenticate, createCategory);
+categoryRoute.put("/categorys/:id", authenticate, updateCategory);
+categoryRoute.delete("/categorys/:id", authenticate, deleteCategory);
 
 export default categoryRoute;

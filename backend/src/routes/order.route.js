@@ -7,14 +7,14 @@ import {
   insertOrder,
   purchaseYearly,
 } from "../controllers/order.controller.js";
-import { autenticate } from "../controllers/error.controller.js";
+import { authenticate } from "../controllers/error.controller.js";
 const orderRouter = Router();
 
-orderRouter.post("/orders/:userId", autenticate, insertOrder);
-orderRouter.get("/orders/:id", autenticate, getOrderById);
-orderRouter.get("/orders", autenticate, getAllOrder);
-orderRouter.post("/orders-pdf", autenticate, generatePdf);
-orderRouter.post("/orders-excel", autenticate, generateExcel);
-orderRouter.get("/orders-year", autenticate, purchaseYearly);
+orderRouter.post("/orders/:userId", authenticate, insertOrder);
+orderRouter.get("/orders/:id", authenticate, getOrderById);
+orderRouter.get("/orders", authenticate, getAllOrder);
+orderRouter.post("/orders-pdf", authenticate, generatePdf);
+orderRouter.post("/orders-excel", authenticate, generateExcel);
+orderRouter.get("/orders-year", authenticate, purchaseYearly);
 
 export default orderRouter;

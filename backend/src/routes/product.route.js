@@ -9,18 +9,20 @@ import {
   getProductById,
   getLowStockProducts,
   updateProduct,
+  bulkImportProducts,
 } from "../controllers/product.controller.js";
-import { autenticate } from "../controllers/error.controller.js";
+import { authenticate } from "../controllers/error.controller.js";
 const productRoute = Router();
 
-productRoute.get("/products", autenticate, getAllProduct);
-productRoute.get("/products/:id", autenticate, getProductById);
-productRoute.get("/products/category/:id", autenticate, getProductByCategory);
-productRoute.get("/products-low-stock", autenticate, getLowStockProducts);
-productRoute.post("/products", autenticate, createProduct);
-productRoute.put("/products/:id", autenticate, updateProduct);
-productRoute.delete("/products/:id", autenticate, deleteProduct);
-productRoute.get("/products-pdf", autenticate, generatePdf);
-productRoute.get("/products-excel", autenticate, generateExcel);
+productRoute.get("/products", authenticate, getAllProduct);
+productRoute.get("/products/:id", authenticate, getProductById);
+productRoute.get("/products/category/:id", authenticate, getProductByCategory);
+productRoute.get("/products-low-stock", authenticate, getLowStockProducts);
+productRoute.post("/products", authenticate, createProduct);
+productRoute.post("/products-bulk-import", authenticate, bulkImportProducts);
+productRoute.put("/products/:id", authenticate, updateProduct);
+productRoute.delete("/products/:id", authenticate, deleteProduct);
+productRoute.get("/products-pdf", authenticate, generatePdf);
+productRoute.get("/products-excel", authenticate, generateExcel);
 
 export default productRoute;
