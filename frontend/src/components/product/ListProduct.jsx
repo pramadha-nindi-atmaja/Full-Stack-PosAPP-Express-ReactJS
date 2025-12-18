@@ -15,10 +15,11 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import ProductCard from "./ProductCard.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { FaCheck, FaSearch, FaFileImport } from "react-icons/fa";
+import { FaCheck, FaSearch, FaFileImport, FaFileExport } from "react-icons/fa";
 import { confirmAlert } from "react-confirm-alert";
 import { MdCancel } from "react-icons/md";
 import NavbarComponent from "../NavbarComponent.jsx";
+import ExportProducts from "./ExportProducts.jsx";
 import secureLocalStorage from "react-secure-storage";
 
 const ListProduct = () => {
