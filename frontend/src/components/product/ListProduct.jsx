@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import ProductCard from "./ProductCard.jsx";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { FaCheck, FaSearch } from "react-icons/fa";
+import { FaCheck, FaSearch, FaFileImport } from "react-icons/fa";
 import { confirmAlert } from "react-confirm-alert";
 import { MdCancel } from "react-icons/md";
 import NavbarComponent from "../NavbarComponent.jsx";
@@ -151,8 +151,11 @@ const ListProduct = () => {
             <Col>
               <Row>
                 <Col md={5}>
-                  <Link to={"/product/add"} className="btn btn-primary mb-3">
+                  <Link to={"/product/add"} className="btn btn-primary mb-3 me-2">
                     <IoMdAdd /> Add Product
+                  </Link>
+                  <Link to={"/product/bulk-import"} className="btn btn-info mb-3">
+                    <FaFileImport /> Bulk Import
                   </Link>
                 </Col>
                 <Col md={7}>
