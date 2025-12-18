@@ -71,6 +71,11 @@ const Home = () => {
             </div>
           </Col>
         </Row>
+        <Row className="mt-3 bg-body-tertiary rounded p-3">
+          <Col>
+            <ProductAnalytics />
+          </Col>
+        </Row>
       </Container>
     </>
   );
