@@ -7,6 +7,7 @@ import path from "path";
 import fs from "fs";
 import pdf from "pdf-creator-node";
 import excelJS from "exceljs";
+import { parse } from "fast-csv";
 
 export const getAllProduct = async (req, res) => {
   const last_id = parseInt(req.query.lastId) || 0;
@@ -495,6 +496,115 @@ export const getLowStockProducts = async (req, res) => {
   } catch (error) {
     logger.error(
       "controllers/product.controller.js:getLowStockProducts - " + error.message
+    );
+    return res.status(500).json({
+      message: error.message,
+      result: null,
+    });
+  }
+};
+
+export const bulkImportProducts = async (req, res) => {
+  try {
+    if (!req.files || !req.files.file) {
+      return res.status(400).json({
+        message: "CSV file is required",
+        result: null,
+      });
+    }
+
+    const file = req.files.file;
+    const fileExtension = path.extname(file.name).toLowerCase();
+    
+    if (fileExtension !== '.csv') {
+      return res.status(422).json({
+        message: "Only CSV files are allowed",
+        result: null,
+      });
+    }
+
+    const products = [];
+    let rowCount = 0;
+    
+    // Parse CSV file
+    await new Promise((resolve, reject) => {
+      parse(file.data, { headers: true, skipEmptyLines: true })
+        .on('data', (row) => {
+          rowCount++;
+          products.push({
+            productName: row.productName || row['Product Name'] || '',
+            qty: parseInt(row.qty || row.quantity || row.Qty || 0),
+            price: parseFloat(row.price || row.Price || 0),
+            kategoryId: parseInt(row.kategoryId || row.categoryId || row.CategoryId || 0),
+            supplierId: parseInt(row.supplierId || row.SupplierId || 0),
+            barcode: row.barcode || row.Barcode || null,
+            lowStockThreshold: parseInt(row.lowStockThreshold || row.LowStockThreshold || 10)
+          });
+        })
+        .on('end', resolve)
+        .on('error', reject);
+    });
+
+    // Validate products
+    const validationErrors = [];
+    const validProducts = [];
+    
+    for (let i = 0; i < products.length; i++) {
+      const product = products[i];
+      const { error } = productValidation(product);
+      
+      if (error) {
+        validationErrors.push({
+          row: i + 2, // +2 because of header row and 0-based index
+          errors: error.details.map(detail => detail.message)
+        });
+      } else {
+        validProducts.push(product);
+      }
+    }
+
+    // Create products in database
+    const createdProducts = [];
+    for (const product of validProducts) {
+      try {
+        const newProduct = await prisma.product.create({
+          data: {
+            code: setCode("PRD-"),
+            barcode: product.barcode,
+            productName: product.productName,
+            image: 'default.jpg', // Default image for imported products
+            url: `${req.protocol}://${req.get("host")}/images/default.jpg`,
+            qty: product.qty,
+            price: product.price,
+            lowStockThreshold: product.lowStockThreshold,
+            kategoryId: product.kategoryId,
+            supplierId: product.supplierId,
+          },
+        });
+        createdProducts.push(newProduct);
+      } catch (err) {
+        logger.error(
+          "controllers/product.controller.js:bulkImportProducts - " + err.message
+        );
+        validationErrors.push({
+          row: validProducts.indexOf(product) + 2,
+          errors: [err.message]
+        });
+      }
+    }
+
+    return res.status(200).json({
+      message: `Successfully imported ${createdProducts.length} products. ${validationErrors.length} rows had errors.`,
+      result: {
+        successCount: createdProducts.length,
+        errorCount: validationErrors.length,
+        errors: validationErrors,
+        products: createdProducts
+      },
+    });
+  } catch (error) {
+    logger.error(
+      "controllers/product.controller.js:bulkImportProducts - " + error.message
     );
     return res.status(500).json({
       message: error.message,
