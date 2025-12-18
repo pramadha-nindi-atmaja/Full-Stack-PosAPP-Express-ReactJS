@@ -545,13 +545,10 @@ export const bulkImportProducts = async (req, res) => {
     
     for (let i = 0; i < products.length; i++) {
       const product = products[i];
-      const { error } = productValidation(product);
+      const validationErrorsForProduct = validateProductData(product);
       
-      if (error) {
-        validationErrors.push({
-          row: i + 2, // +2 because of header row and 0-based index
-          errors: error.details.map(detail => detail.message)
-        });
+      if (validationErrorsForProduct.length > 0) {
+        validationErrors.push(...formatImportErrors(validationErrorsForProduct, i));
       } else {
         validProducts.push(product);
       }
