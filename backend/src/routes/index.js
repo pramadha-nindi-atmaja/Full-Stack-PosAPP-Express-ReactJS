@@ -7,6 +7,7 @@ import orderRouter from "./order.route.js";
 import userRoute from "./user.route.js";
 import orderReturnRouter from "./orderReturn.route.js";
 import purchaseRouter from "./purchase.route.js";
+import productAnalyticsRoute from "./productAnalytics.route.js";
 const router = Router();
 
 router.use("/api", categoryRoute);
