@@ -1,0 +1,4 @@
+productName,qty,price,kategoryId,supplierId,barcode,lowStockThreshold
+Product A,100,25000,1,1,123456789,10
+Product B,50,35000,2,1,,5
+Product C,200,15000,1,2,987654321,15
