@@ -10,6 +10,7 @@ import EditSupplier from "../components/supplier/EditSupplier.jsx";
 import ListProduct from "../components/product/ListProduct.jsx";
 import AddProduct from "../components/product/AddProduct.jsx";
 import EditProduct from "../components/product/EditProduct.jsx";
+import BulkImportProduct from "../components/product/BulkImportProduct.jsx";
 import ListSales from "../components/sales/ListSales.jsx";
 import OrderSend from "../components/sales/OrderSend.jsx";
 import ListSalesHistory from "../components/salesHistory/ListSalesHistory.jsx";
@@ -58,6 +59,7 @@ const RouteNavigation = () => {
               {/* product */}
               <Route path="/product" element={<ListProduct />} />
               <Route path="/product/add" element={<AddProduct />} />
+              <Route path="/product/bulk-import" element={<BulkImportProduct />} />
               <Route path="/product/:id" element={<EditProduct />} />
               {/* sales */}
               <Route path="/sales" element={<ListSales />} />
