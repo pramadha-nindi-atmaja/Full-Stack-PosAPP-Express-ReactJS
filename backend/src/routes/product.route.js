@@ -20,7 +20,7 @@ productRoute.get("/products/:id", authenticate, getProductById);
 productRoute.get("/products/category/:id", authenticate, getProductByCategory);
 productRoute.get("/products-low-stock", authenticate, getLowStockProducts);
 productRoute.post("/products", authenticate, createProduct);
-productRoute.post("/products-bulk-import", authenticate, bulkImportProducts);
+productRoute.post("/products-bulk-import", bulkImportLimiter, authenticate, bulkImportProducts);
 productRoute.put("/products/:id", authenticate, updateProduct);
 productRoute.delete("/products/:id", authenticate, deleteProduct);
 productRoute.get("/products-pdf", authenticate, generatePdf);
