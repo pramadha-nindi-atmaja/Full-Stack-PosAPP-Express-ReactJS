@@ -836,5 +836,26 @@
       "supplier[address]": "44266 Macpherson Trail",
       "id": 1
     }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "userName": "admin",
+      "password": "$2b$10$rV2.EfBXkT0OUvHa4/ql5.d5T5q8X73NRn1MPXmWx8OPlcF5HGB2G",
+      "name": "Administrator",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "userName": "user",
+      "password": "$2b$10$rV2.EfBXkT0OUvHa4/ql5.d5T5q8X73NRn1MPXmWx8OPlcF5HGB2G",
+      "name": "Regular User",
+      "role": "user"
+    },
+    {
+      "password": "admin123",
+      "userName": "admin",
+      "id": 3
+    }
   ]
 }
